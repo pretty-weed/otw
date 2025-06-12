@@ -1,0 +1,1 @@
+cat data.txt | base64 --dec | cut -d " " -f 4

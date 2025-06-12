@@ -1,0 +1,1 @@
+cat data.txt | sort | uniq -c | sed '/^[[:space:]]*\([234567890]\|[[:digit:]][[:digit:]]\+\)[[:space:]]/d;s/^[[:space:]]*1[[:space:]]*//g'

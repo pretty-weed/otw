@@ -1,0 +1,1 @@
+for fn in $(find inhere -type f); do test $(file $fn | cut -d ' ' -f 2) = "ASCII" && cat $fn &&  break; done

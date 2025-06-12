@@ -1,0 +1,1 @@
+strings data.txt | grep '==' | grep -v "the\|password\|is" | sed 's/^=\+[[:space:]]*//g'
