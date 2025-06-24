@@ -1,0 +1,24 @@
+[project]
+name = "dandelion-otw"
+dynamic = ["version", "readme"]
+description = "My tooling for solving the Over the Wire wargame"
+requires-python = "~=3.12"
+license = {file="LICENSE.md"}
+authors = [{name="Dandelion Good"}]
+
+dependencies = [
+    "requests~=2.32"
+]
+
+[project.scripts]
+otp-fetcher = "util.fetcher:main"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"], content-type = "text/markdown"}
+
+[tool.black]
+line-length = 99
+
+[build-system]
+requires = ["setuptools", "setuptools-scm", "wheel"]
+build-backend = "setuptools.build_meta"

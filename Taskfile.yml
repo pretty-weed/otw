@@ -1,0 +1,80 @@
+version: "3"
+vars:
+  default_level: &level '{{ .level | default .CLI_ARGS | default 13 }}'
+  OUT_DIR: '{{ .OUT_DIR | default "output" }}'
+tasks:
+  require-cmd:
+    internal: true
+    vars:
+      level: *level
+    preconditions:
+      - sh: test -f commands/bandit{{ .level }}.cmd
+        msg: No command to run for level {{ .level }}.
+      
+  clean:
+    cmds:
+      - find passwords/ -type f -not -name bandit0.pw -exec rm {} \;
+      - rm output/bandit*.out
+  setup-output:
+    run: once
+    internal: true
+    status:
+      - test -d '{{ .OUT_DIR }}'
+    cmds:
+      - mkdir {{ .OUT_DIR }}
+  fetch-bandit:
+    desc: |
+      Get raw next level password to {{ .OUT_DIR }}. 
+      level provided as arg is the current (no target) level, 
+    run: when_changed
+    label: "fetch-bandit ({{ .level }})"
+    status:
+      - test {{ .level }} -lt 1 || test -f output/bandit{{ .level }}.out
+    vars:
+      level: *level
+    deps:
+      - setup-output
+      - task: require-cmd
+        vars:
+          level: '{{ .level }}'
+    sources:
+      - 'passwords/bandit{{ .level }}.pw'
+      - 'commands/bandit{{ .level }}.cmd'
+    generates:
+      - 'output/bandit{{ .level }}.out'
+    cmds:
+      - task: run-bandit
+        vars:
+          level: '{{ sub .level 1 }}'
+      - >
+        sshpass -f "passwords/bandit{{ .level }}.pw"
+        ssh -q bandit{{ .level }}@otw
+        $(cat commands/bandit{{.level}}.cmd) 
+        | tee {{ .OUT_DIR }}/bandit{{ .level }}.out
+  run-bandit:
+    desc: fetch the next password, clean and output it
+    run: when_changed
+    label: "run-bandit ({{ .level }})"
+    status:
+      - test {{ .level }} -lt 1 || test -f passwords/bandit{{ add .level 1 }}.pw
+    vars:
+      level: *level
+    generates:
+      - 'passwords/bandit{{ add .level 1 }}.pw'
+    sources:
+      - 'output/bandit{{ .level }}.out'
+    cmds:
+      - task: fetch-bandit
+        vars:
+          level: '{{ .level }}'
+      - > 
+        cat {{ .OUT_DIR }}/bandit{{ .level }}.out
+        | tr -d '\n'
+        | xargs
+        | tee passwords/bandit{{ add .level 1 }}.pw
+  ssh-bandit:
+    interactive: true
+    vars:
+      level: *level
+    cmds:
+      - sshpass -f "passwords/bandit{{ .level }}.pw" ssh bandit{{ add .level 1 }}@otw

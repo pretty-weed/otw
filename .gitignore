@@ -1,0 +1,14 @@
+# Tooling state
+.task
+
+# OTW state
+instructions/
+output/
+passwords/
+
+# lawful good
+commands/
+# Python stuf
+__pycache__
+build/
+*.egg-info
