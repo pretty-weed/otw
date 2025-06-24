@@ -1,1 +1,1 @@
-cat data.txt | base64 --dec
+cat data.txt | cut -d ' ' -f 4| tr 'a-zA-Z' 'n-za-mN-ZA-M' 
